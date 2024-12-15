@@ -110,6 +110,10 @@ Resources:
       LaunchTemplate:
         LaunchTemplateId: !Ref LaunchTemplate
         Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      Tags:
+        - Key: Name
+          Value: evangel_instance
+          PropagateAtLaunch: true # Ensures the tag is applied to EC2 instances launched by the AutoScaling group
 
 Outputs:
   InstanceCount:
