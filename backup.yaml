@@ -82,35 +82,22 @@ Resources:
         KeyName: python-aws-script # Replace with your key pair name
         SecurityGroupIds:
           - !Ref SecurityGroup
-       UserData: !Base64
-  Fn::Sub: |
-    #!/bin/bash
-    exec > /var/log/user-data.log 2>&1
-    set -x
-
-    # Update and install dependencies
-    yum update -y
-    yum install -y python3 python3-pip git
-
-    # Fetch the instance ID and calculate instance index
-    INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-    INSTANCE_INDEX=$(echo ${INSTANCE_ID} | cut -d'-' -f2 | awk '{print $1 % ${InstanceCount}}')
-
-    # Set instance name using worker_ pattern
-    INSTANCE_NAME="worker_${INSTANCE_INDEX}"
-
-    # Export environment variables
-    echo "export INSTANCE_COUNT=${INSTANCE_INDEX}" >> /etc/environment
-    echo "export INSTANCE_NAME=${INSTANCE_NAME}" >> /etc/environment
-    echo "export PATH=$PATH:/etc/environment" >> /etc/profile
-    source /etc/environment
-
-    # Clone and run your Python app
-    cd /opt
-    git clone https://github.com/devevangel/python_aws_script.git
-    cd python_aws_script
-    pip3 install -r requirements.txt
-    nohup python3 main.py > /var/log/main.log 2>&1 &
+        UserData: !Base64
+          Fn::Sub: |
+            #!/bin/bash
+            exec > /var/log/user-data.log 2>&1
+            set -x
+            # Update and install dependencies
+            yum update -y
+            yum install -y python3 python3-pip git
+            # Source the environment variables to make them available
+            source /etc/environment
+            # Clone and run your Python app
+            cd /opt
+            git clone https://github.com/devevangel/python_aws_script.git
+            cd python_aws_script
+            pip3 install -r requirements.txt
+            nohup python3 main.py > /var/log/main.log 2>&1 &
 
   EC2Instances:
     Type: AWS::AutoScaling::AutoScalingGroup
